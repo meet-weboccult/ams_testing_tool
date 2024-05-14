@@ -1,88 +1,105 @@
-
-from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import  *
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap,QImage,QBrush, QPen
 import sys
 
+class Filters:
+    def __init__(self) -> None:
+        self.widgets = dict()
+
+        self.widgets["office_filter"] = self.create_office_filter()
+        self.widgets["floor_filter"] = self.create_floor_filter()
+        self.widgets["start_datetime"] = self.create_datetime_filter()
+        self.widgets["end_datetime"] = self.create_datetime_filter()
+        self.widgets["filter_btn"] = self.create_filter_btn()
+   
+    def create_office_filter(self):
+        combobox = QComboBox()
+        combobox.addItem("WOT")
+        combobox.addItem("Elsner")
+        return combobox
+    
+    def create_floor_filter(self):
+        combobox = QComboBox()
+        combobox.addItem("Floor 1")
+        combobox.addItem("Floor 2")
+        return combobox
+
+    def create_datetime_filter(self):
+        datetime = QDateTimeEdit()
+        return datetime
+    
+    def create_filter_btn(self):
+        btn = QPushButton("Filter")
+        return btn
+
+class Display:
+    def __init__(self) -> None:
+        self.widgets = dict()
+        self.widgets['previous_btn'] = self.create_navigation_btn("<",self.change_previous_image)
+        self.widgets['next_btn'] = self.create_navigation_btn(">",self.change_next_image)
+
+        self.widgets['display'] = self.create_image_display()
+
+    def create_navigation_btn(self, text, callback):
+        btn = QPushButton(text)
+        btn.clicked.connect(callback)
+        btn.setFixedWidth(50)
+        btn.setFixedHeight(70)
+        return btn
+
+    def change_previous_image(self):
+        pass
+
+    def change_next_image(self):
+        pass
+
+    def create_image_display(self):
+        self.scene = QGraphicsScene()     
+        self.view = QGraphicsView()
+        self.view.setScene(self.scene)
+        self.view.show()
+        
+        return self.view
 
 class MobileDetection:
     def __init__(self) -> None:
         self.app = QApplication(sys.argv)
-        self.create_window()
-        self.create_filters()
-        self.create_image_display()
+        self.window = self.create_window()
+        self.filters = Filters()
+        self.display = Display()
+        self.place_widgets()
         self.show_window()
 
     def create_window(self):
-        self.window = QWidget()
-        self.window.setWindowTitle("Mobile Detection")
+        window = QWidget()
+        window.setWindowTitle("Mobile Detection")
         screen = self.app.primaryScreen()
         size = screen.availableGeometry()
-        self.window.setFixedSize(size.width(),size.height())
-
+        self.screen_size = (size.width(),size.height())
+        window.setFixedSize(*self.screen_size)
         self.layout = QVBoxLayout()
+        return window
     
-    def create_filters(self):
-        filters_container = QHBoxLayout()
+    def place_widgets(self):
+        row1 = QHBoxLayout()
+        row1.addWidget(self.filters.widgets['office_filter'])
+        row1.addWidget(self.filters.widgets['floor_filter'])
+        row1.addWidget(self.filters.widgets['start_datetime'])
+        row1.addWidget(self.filters.widgets['end_datetime'])
+        row1.addWidget(self.filters.widgets['filter_btn'])
 
-        office_filter = QComboBox()
-        office_filter.addItems(["Elsner", "WOT"])
-        office_filter.setFixedWidth(200)
-
-        floor_filter = QComboBox()
-        floor_filter.addItems(["floor 1", "floor 2"])
-        floor_filter.setFixedWidth(200)
-
-        time_filter_start = QDateTimeEdit()
-        time_filter_start.setFixedWidth(200)
-
-        to_label = QLabel(" To ")
-        to_label.setFixedWidth(30)
+        row2 = QHBoxLayout()
+        row2.addWidget(self.display.widgets['previous_btn'])
+        row2.addWidget(self.display.widgets['display'])
+        row2.addWidget(self.display.widgets['next_btn'])
+                
+        self.layout.addLayout(row1)
+        self.layout.addLayout(row2)      
         
-        time_filter_end = QDateTimeEdit()
-        time_filter_end.setFixedWidth(200)
-
-        filter_btn = QPushButton("Filter")
-        filter_btn.setFixedWidth(100)
-
-        
-        filters_container.addWidget(office_filter)
-        filters_container.addWidget(floor_filter)
-        filters_container.addWidget(time_filter_start)
-        filters_container.addWidget(to_label)
-        filters_container.addWidget(time_filter_end)
-        filters_container.addWidget(filter_btn)
-
-        filters_container.setAlignment(Qt.AlignLeft)
-
-
-        self.layout.addLayout(filters_container)
-      
-    def create_image_display(self):
-        display_container = QHBoxLayout()
-
-        image_display = QLabel()
-        pixmap = QPixmap("/home/wotmeet/Internship/meet-makwana-training-2024/tasks/qdrant/images/0f117fce-0a08-4f23-8b3f-c8a3c1265792_cat_image7.jpeg")
-        image_display.setPixmap(pixmap)
-        image_display.resize(pixmap.width(),pixmap.height())
-
-        previous_btn = QPushButton("<")
-
-        next_btn = QPushButton(">")
-
-        display_container.addWidget(previous_btn)
-        display_container.addWidget(image_display)
-        display_container.addWidget(next_btn)
-
-
-        self.layout.addLayout(display_container)
-
-
     def show_window(self):
-        self.layout.setAlignment(Qt.AlignTop)
         self.window.setLayout(self.layout)
         self.window.show()
-
         self.app.exec_()
-    
+
 MobileDetection()
