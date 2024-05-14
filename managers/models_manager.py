@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import *
-
+import time
 class ModelSelection:
 
     def __init__(self) -> None:
@@ -11,6 +11,7 @@ class ModelSelection:
         self.window.setLayout(self.layout)
 
         self.models = dict()
+        self.selected_model = None
 
     def add_model(self,model):
         self.models.update(model)
@@ -33,8 +34,11 @@ class ModelSelection:
 
         self.window.show()
         self.app.exec_()
+        return self.selected_model
         
     def open_model(self,cls):
+        
         self.app.closeAllWindows()
-        cls()
+        self.selected_model = cls
+        
 

@@ -46,10 +46,15 @@ class AuthenticationGUI:
         self.window.move(qr.topLeft())
         
 class AuthenticationManager:
+    def __init__(self) -> None:
+        self.validator_name = None
 
     def start_authentication(self):
         self.gui = AuthenticationGUI()
         self.gui.create_layout(self.on_submit)
+        
+    def get_user(self):
+        return self.validator_name
         
     def on_submit(self,**kwargs):
         self.validator_name = kwargs['validator_name']
