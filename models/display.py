@@ -2,9 +2,9 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPixmap,QPen,QBrush,QTransform
 from PyQt5.QtCore import Qt, QRectF
 import requests
-
+from pprint import pprint
 class DrawableRectItem(QGraphicsRectItem):
-    def __init__(self, rect=QRectF(), pen=QPen(Qt.white, 4), brush=QBrush(Qt.NoBrush)):
+    def __init__(self, rect=QRectF(), pen=QPen(Qt.white, 3), brush=QBrush(Qt.NoBrush)):
         super().__init__(rect)
         self.setPen(pen)
         self.setBrush(brush)
@@ -12,6 +12,7 @@ class DrawableRectItem(QGraphicsRectItem):
         self.is_hovering = False  # Track hover state
         self.is_createing = True
         self.offset = []
+        self.data = None
     
     def hoverEnterEvent(self, event):
         self.is_hovering = True
@@ -61,7 +62,7 @@ class Display:
         self.scene.addPixmap(pixmap)       
 
     def draw_bboxes(self, documents):
-        
+        self.rect_items = []
         for document in documents:
             for phone in document['img_data']['phone_results']:
                 bbox = phone['bbox']
@@ -72,6 +73,7 @@ class Display:
 
                 rect = QRectF(x1,y1,w,h)
                 rect_item = DrawableRectItem(rect)
+                rect_item.data = document
                 self.scene.addItem(rect_item)
                 self.rect_items.append(rect_item)
         self.view.setFocus()

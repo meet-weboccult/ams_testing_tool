@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import  QApplication, QWidget, QVBoxLayout, QHBoxLayout, QShortcut
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QShortcut
 import sys
 from pprint import pprint
 from database_manager import Database
@@ -13,19 +13,27 @@ class MobileDetection:
         self.app = QApplication(sys.argv)
         self.window = self.create_window()
         self.filters = Filters(self.changed_filters)
+        self.is_data_loaded = False
         self.display = Display(self.changed_image)
-        self.actions = Actions(self.display)
+        self.actions = Actions(self.filters,self.display)
         self.place_widgets()
+        self.set_shortcuts()
         self.show_window()
     
     def changed_filters(self,**kwargs):
         if not len(self.filters.data):
+            self.display.scene.clear()
+            self.actions.change_counter()
             return
         
         first = self.filters.data[0]
         self.display.display_image(first['_id'])
         self.display.draw_bboxes(first['documents'])
-        
+        if len(self.filters.data):
+            self.is_data_loaded = True
+            self.display.current_position = 0
+            self.actions.change_counter()
+            
 
     def changed_image(self):
         position = self.display.current_position 
@@ -34,6 +42,7 @@ class MobileDetection:
         image_data = self.filters.data[position]
         self.display.display_image(image_data['_id'])
         self.display.draw_bboxes(image_data['documents'])
+        self.actions.change_counter()
 
     def create_window(self):
         window = QWidget()
@@ -63,8 +72,27 @@ class MobileDetection:
         row3.addWidget(self.actions.widgets['approve_btn'])
                         
         self.layout.addLayout(row1)
+        self.layout.addStretch()
         self.layout.addLayout(row2)
+        self.layout.addStretch()
         self.layout.addLayout(row3)          
+        self.layout.addStretch()
+        self.layout.addWidget(self.actions.widgets['status_bar'])
+        self.layout.addStretch()
+        
+    def set_shortcuts(self):
+        
+        shortcut_next = QShortcut("Right",self.window)
+        shortcut_next.activated.connect(self.display.change_next_image)
+
+        shortcut_previous = QShortcut("Left",self.window)
+        shortcut_previous.activated.connect(self.display.change_previous_image)
+
+        shortcut_next = QShortcut("Ctrl+Right",self.window)
+        shortcut_next.activated.connect(self.actions.skip)
+
+        shortcut_previous = QShortcut("Ctrl+S",self.window)
+        shortcut_previous.activated.connect(self.actions.approve)
 
     def show_window(self):
         self.window.setLayout(self.layout)
