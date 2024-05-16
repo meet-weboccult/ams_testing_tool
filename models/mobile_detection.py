@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import  *
-from PyQt5.QtCore import Qt,QRectF, QDateTime
+from PyQt5.QtCore import Qt,QRectF, QDateTime, QDate, QTime
 from PyQt5.QtGui import QPixmap,QPen,QBrush,QTransform
 import sys
 import requests
@@ -19,8 +19,8 @@ class Filters:
         if self.widgets['office_filter'].count():
             self.change_floors(self.widgets["office_filter"].itemText(0))
 
-        self.widgets["start_datetime"] = self.create_datetime_filter()
-        self.widgets["end_datetime"] = self.create_datetime_filter()
+        self.widgets["start_datetime"] = self.create_datetime_filter(QDate().currentDate().addDays(-1))
+        self.widgets["end_datetime"] = self.create_datetime_filter(QDate().currentDate())
         self.widgets["filter_btn"] = self.create_filter_btn()
    
     def create_office_filter(self):
@@ -39,9 +39,9 @@ class Filters:
         combobox = QComboBox()
         return combobox
 
-    def create_datetime_filter(self):
+    def create_datetime_filter(self,qdate):
         datetime = QDateTimeEdit()
-        datetime.setDateTime(QDateTime.currentDateTime())
+        datetime.setDateTime(QDateTime(qdate,QTime()))
         datetime.setCalendarPopup(True)
         return datetime
     
@@ -68,6 +68,8 @@ class DrawableRectItem(QGraphicsRectItem):
         self.setBrush(brush)
         self.initial_pen = pen  # Store the initial pen
         self.is_hovering = False  # Track hover state
+        self.is_createing = True
+        self.offset = []
     
     def hoverEnterEvent(self, event):
         self.is_hovering = True
@@ -157,33 +159,47 @@ class Display:
         self.view.keyPressEvent = self.keyPressEvent 
 
         return self.view
+    
 
     def mousePressEvent(self, event):
         scene_event = self.view.mapToScene(event.pos()) 
 
         if event.button() == Qt.LeftButton:
             item = self.scene.itemAt(scene_event, QTransform())
-            if isinstance(item, DrawableRectItem):
+            if isinstance(item, DrawableRectItem):  
+                # If there's already bbox present
                 self.rect_item = item
                 self.start_pos = scene_event
                 self.rect_item.hoverEnterEvent(event)
-            else:
+                self.rect_item.is_createing = False
+                self.rect_item.offset = [event.pos().x()-self.rect_item.rect().x(), 
+                                         event.pos().y()-self.rect_item.rect().y() ]                    
+            else:                                   
+                # create New DrawableRectItem Object
                 self.start_pos = scene_event
                 rect = QRectF(self.start_pos, self.start_pos)
                 self.rect_item = DrawableRectItem(rect)
                 self.scene.addItem(self.rect_item)
                 self.rect_items.append(self.rect_item)
+            
 
     def mouseMoveEvent(self, event):
-        
-        scene_event = self.view.mapToScene(event.pos())
-        view_rect = self.view.mapToScene(self.view.rect()).boundingRect()
 
-        if self.rect_item and event.buttons() & Qt.LeftButton:
-            if isinstance(self.rect_item, DrawableRectItem):
-                rect = QRectF(self.start_pos, scene_event).normalized()
-                clamped_rect = rect.intersected(view_rect)
-                self.rect_item.setRect(clamped_rect)
+        if self.rect_item.is_createing:
+            # creating new bbox
+            scene_event = self.view.mapToScene(event.pos())
+            view_rect = self.view.mapToScene(self.view.rect()).boundingRect()
+
+            if self.rect_item and event.buttons() & Qt.LeftButton:
+                if isinstance(self.rect_item, DrawableRectItem):
+                    rect = QRectF(self.start_pos, scene_event).normalized()
+                    clamped_rect = rect.intersected(view_rect)
+                    self.rect_item.setRect(clamped_rect)
+        else:
+            # Moving bbox
+            new_position = [event.pos().x()-self.rect_item.offset[0],
+                            event.pos().y()-self.rect_item.offset[1]]
+            self.rect_item.setRect(QRectF(new_position[0],new_position[1],self.rect_item.rect().width(),self.rect_item.rect().height()))
 
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -274,8 +290,7 @@ class MobileDetection:
                         
         self.layout.addLayout(row1)
         self.layout.addLayout(row2)
-        self.layout.addLayout(row3)      
-    
+        self.layout.addLayout(row3)          
         
     def show_window(self):
         self.window.setLayout(self.layout)
