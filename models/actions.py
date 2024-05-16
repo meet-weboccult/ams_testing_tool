@@ -31,27 +31,31 @@ class Actions:
     def approve(self):   
         if not len(self.filters_object.data) : 
             return
-        
-        bboxes = self.display_object.rect_items
-        curren_position = self.display_object.current_position
-        for bbox in bboxes:
-            width,height = self.display_object.current_size
-            
-            nx1,ny1,nx2,ny2 = bbox.rect().getCoords()
-            nx1 = nx1/width
-            ny1 = ny1/height
-            nx2 = nx2/width
-            ny2 = ny2/height
-            bbox.data['img_data']['phone_results'][0]['bbox'] = [nx1,ny1,nx2,ny2]
 
-            self.filters_object.data[curren_position]['documents'][0]['img_data']['phone_results'][0]['bbox']= [nx1,ny1,nx2,ny2]
-            
-
+        old_changed_data = list(filter(lambda bbox:bbox.is_changed,self.display_object.old_bboxes))
+        self.process_bboxes(old_changed_data)
         
+        print("new     :",self.display_object.created_bboxes)
+        print("old     :",old_changed_data)
+        print("removed :",self.display_object.removed_bboxes)        
         
         self.display_object.change_next_image()
         self.widgets['status_bar'].clearMessage()
         self.widgets['status_bar'].showMessage("Approved")
+
+    def process_bboxes(self,old_bboxes):
+        current_position = self.display_object.current_position
+        width,height = self.display_object.current_size
+
+        for bbox in old_bboxes:
+            new_coords = [
+                bbox.rect().left()/width,
+                bbox.rect().top()/height,
+                bbox.rect().width()/width,
+                bbox.rect().height()/height
+            ]
+            pprint(self.filters_object.data[current_position]['documents'][0]['img_data']['phone_results'][0])
+        
 
     def skip(self):
         if not len(self.filters_object.data) : 

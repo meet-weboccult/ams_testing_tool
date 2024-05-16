@@ -13,6 +13,8 @@ class DrawableRectItem(QGraphicsRectItem):
         self.is_createing = True
         self.offset = []
         self.data = None
+        self.is_changed = False
+        self.is_created = True
     
     def hoverEnterEvent(self, event):
         self.is_hovering = True
@@ -32,7 +34,9 @@ class Display:
         self.widgets['display'] = self.create_image_display()
         self.start_pos = None
         self.rect_item = None
-        self.rect_items = [] 
+        self.created_bboxes = [] 
+        self.old_bboxes = []
+        self.removed_bboxes = []
         self.current_position = 0
         self.current_size = []
 
@@ -62,7 +66,9 @@ class Display:
         self.scene.addPixmap(pixmap)       
 
     def draw_bboxes(self, documents):
-        self.rect_items = []
+        self.old_bboxes = []
+        self.created_bboxes = []
+        self.removed_bboxes = []
         for document in documents:
             for phone in document['img_data']['phone_results']:
                 bbox = phone['bbox']
@@ -74,8 +80,9 @@ class Display:
                 rect = QRectF(x1,y1,w,h)
                 rect_item = DrawableRectItem(rect)
                 rect_item.data = document
+                rect_item.is_created = False
                 self.scene.addItem(rect_item)
-                self.rect_items.append(rect_item)
+                self.old_bboxes.append(rect_item)
         self.view.setFocus()
 
     def change_previous_image(self):
@@ -123,7 +130,7 @@ class Display:
                 rect = QRectF(self.start_pos, self.start_pos)
                 self.rect_item = DrawableRectItem(rect)
                 self.scene.addItem(self.rect_item)
-                self.rect_items.append(self.rect_item)
+                self.created_bboxes.append(self.rect_item)
             
 
     def mouseMoveEvent(self, event):
@@ -140,6 +147,7 @@ class Display:
                     self.rect_item.setRect(clamped_rect)
         else:
             # Moving bbox
+            self.rect_item.is_changed = True
             new_position = [event.pos().x()-self.rect_item.offset[0],
                             event.pos().y()-self.rect_item.offset[1]]
             self.rect_item.setRect(QRectF(new_position[0],new_position[1],self.rect_item.rect().width(),self.rect_item.rect().height()))
@@ -155,6 +163,11 @@ class Display:
         if event.key() == Qt.Key_Delete:
             if self.rect_item:
                 self.scene.removeItem(self.rect_item)
-                self.rect_items.remove(self.rect_item)
+                if self.rect_item.is_created:
+                    self.created_bboxes.remove(self.rect_item)
+                else:
+                    self.old_bboxes.remove(self.rect_item)  
+                    self.removed_bboxes.append(self.rect_item)
+
                 self.rect_item = None
 
