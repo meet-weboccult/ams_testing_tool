@@ -1,4 +1,5 @@
 import pymongo
+from bson.objectid import ObjectId
 from datetime import datetime
 from constants import HOST, PORT, USERNAME, PASSWORD, DATABASE
 class Database:
@@ -14,7 +15,7 @@ class Database:
             Database._instance = self
 
         try:
-            self.client = pymongo.MongoClient(host=HOST,port=PORT,username=USERNAME,password=PASSWORD)
+            self.client = pymongo.MongoClient("mongodb://localhost:27017/")
             self.database = self.client.get_database(DATABASE)    
         except Exception as e:
             print(e)
@@ -56,3 +57,14 @@ class Database:
         data = collection.aggregate(pipeline)
         return data
             
+    def update_bbox(self,document):
+        object_id = ObjectId(document['_id'])
+        collection = self.database['mobile_usages']
+        collection.update_one({"_id":object_id},{"$set":document})
+
+    def delete_bbox(self,document):
+        object_id = ObjectId(document['_id'])
+        collection = self.database['mobile_usages']
+        collection.delete_one({"_id":object_id})
+        
+        

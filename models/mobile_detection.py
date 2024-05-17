@@ -64,7 +64,10 @@ class MobileDetection:
 
         row2 = QHBoxLayout()
         row2.addWidget(self.display.widgets['previous_btn'])
-        row2.addWidget(self.display.widgets['display'])
+        col = QVBoxLayout()
+        col.addWidget(self.display.widgets['image_name'])
+        col.addWidget(self.display.widgets['display'])
+        row2.addLayout(col)
         row2.addWidget(self.display.widgets['next_btn'])
 
         row3 = QHBoxLayout()
