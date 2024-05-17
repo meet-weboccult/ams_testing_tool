@@ -37,8 +37,16 @@ class MobileDetection:
 
     def changed_image(self):
         position = self.display.current_position 
-        if not len(self.filters.data) : 
+        total_images = len(self.filters.data)
+        
+        if not total_images: 
+            self.actions.widgets['status_bar'].showMessage("No Images Found")
             return
+        elif position >= total_images:
+            self.actions.widgets['status_bar'].showMessage("End of Images")
+            self.display.scene.clear()
+            return
+        
         image_data = self.filters.data[position]
         self.display.display_image(image_data['_id'])
         self.display.draw_bboxes(image_data['documents'])

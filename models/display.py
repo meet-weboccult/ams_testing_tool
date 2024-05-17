@@ -17,6 +17,8 @@ class DrawableRectItem(QGraphicsRectItem):
         self.data = None
         self.is_changed = False
         self.is_created = True
+        self.parent_document = None
+        self.index_in_document = None
     
     def hoverEnterEvent(self, event):
         self.is_hovering = True
@@ -36,10 +38,10 @@ class Display:
         self.widgets['image_name'] = self.create_image_name()
         self.clipboard = QApplication.clipboard()
         self.start_pos = None
-        self.rect_item = None
-        self.created_bboxes = [] 
-        self.old_bboxes = []
-        self.removed_bboxes = []
+        self.current_rect = None
+        self.old_bboxes = dict()
+        self.created_bboxes = dict() 
+        self.removed_bboxes = dict()
         self.current_position = 0
         self.current_size = []
 
@@ -87,24 +89,27 @@ class Display:
         self.scene.addPixmap(pixmap)       
 
     def draw_bboxes(self, documents):
-        self.old_bboxes = []
-        self.created_bboxes = []
-        self.removed_bboxes = []
+        self.old_bboxes = dict()
+        self.created_bboxes = dict()
+        self.removed_bboxes = dict()
         for document in documents:
-            
-            for phone in document['img_data']['phone_results']:
+            for index,phone in enumerate(document['img_data']['phone_results']):
                 bbox = phone['bbox']
+
                 x1 = round(bbox[0]*self.current_size[0])
                 y1 = round(bbox[1]*self.current_size[1])
                 w = round(bbox[2]*self.current_size[0]) - x1
                 h = round(bbox[3]*self.current_size[1]) - y1
-
                 rect = QRectF(x1,y1,w,h)
+
                 rect_item = DrawableRectItem(rect)
                 rect_item.data = document
                 rect_item.is_created = False
+                rect_item.parent_document = document['_id']
+                rect_item.index_in_document = index
+                
                 self.scene.addItem(rect_item)
-                self.old_bboxes.append(rect_item)
+                self.old_bboxes[document['_id']] = self.old_bboxes.get(document['_id'],[]) + [rect_item]
         self.view.setFocus()
 
     def create_image_display(self):
@@ -135,59 +140,60 @@ class Display:
             item = self.scene.itemAt(scene_event, QTransform())
             if isinstance(item, DrawableRectItem):  
                 # If there's already bbox present
-                self.rect_item = item
+                self.current_rect = item
                 self.start_pos = scene_event
-                self.rect_item.hoverEnterEvent(event)
-                self.rect_item.is_createing = False
-                self.rect_item.offset = [event.pos().x()-self.rect_item.rect().x(), 
-                                         event.pos().y()-self.rect_item.rect().y() ]                    
+                self.current_rect.hoverEnterEvent(event)
+                self.current_rect.is_createing = False
+                self.current_rect.offset = [event.pos().x()-self.current_rect.rect().x(), 
+                                         event.pos().y()-self.current_rect.rect().y() ]                    
             else:                                   
                 # create New DrawableRectItem Object
                 self.start_pos = scene_event
                 rect = QRectF(self.start_pos, self.start_pos)
-                self.rect_item = DrawableRectItem(rect)
-                self.scene.addItem(self.rect_item)
-                self.created_bboxes.append(self.rect_item)
+                self.current_rect = DrawableRectItem(rect)
+                self.scene.addItem(self.current_rect)
+                self.created_bboxes.append(self.current_rect)
             
 
     def mouseMoveEvent(self, event):
         if not event.buttons() & Qt.LeftButton:
             return
-        if self.rect_item.is_createing:
+        if self.current_rect.is_createing:
             # creating new bbox
             scene_event = self.view.mapToScene(event.pos())
             view_rect = self.view.mapToScene(self.view.rect()).boundingRect()
 
-            if self.rect_item and event.buttons() & Qt.LeftButton:
-                if isinstance(self.rect_item, DrawableRectItem):
+            if self.current_rect and event.buttons() & Qt.LeftButton:
+                if isinstance(self.current_rect, DrawableRectItem):
                     rect = QRectF(self.start_pos, scene_event).normalized()
                     clamped_rect = rect.intersected(view_rect)
-                    self.rect_item.setRect(clamped_rect)
+                    self.current_rect.setRect(clamped_rect)
         else:
             # Moving bbox
-            self.rect_item.is_changed = True
-            new_position = [event.pos().x()-self.rect_item.offset[0],
-                            event.pos().y()-self.rect_item.offset[1]]
-            self.rect_item.setRect(QRectF(new_position[0],new_position[1],self.rect_item.rect().width(),self.rect_item.rect().height()))
+            self.current_rect.is_changed = True
+            new_position = [event.pos().x()-self.current_rect.offset[0],
+                            event.pos().y()-self.current_rect.offset[1]]
+            self.current_rect.setRect(QRectF(new_position[0],new_position[1],self.current_rect.rect().width(),self.current_rect.rect().height()))
 
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
-            if self.rect_item is not None:
-                self.rect_item.hoverLeaveEvent(event)
+            if self.current_rect is not None:
+                self.current_rect.hoverLeaveEvent(event)
             self.start_pos = None
-            self.rect_item = None
+            self.current_rect = None
     
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Delete:
-            if self.rect_item:
-                self.scene.removeItem(self.rect_item)
-                if self.rect_item.is_created:
-                    self.created_bboxes.remove(self.rect_item)
+            if self.current_rect:
+                self.scene.removeItem(self.current_rect)
+                parent_doc = self.current_rect.parent_document
+                if self.current_rect.is_created:
+                    self.created_bboxes[parent_doc].remove(self.current_rect)
                 else:
-                    self.old_bboxes.remove(self.rect_item)  
-                    self.removed_bboxes.append(self.rect_item)
+                    self.old_bboxes[parent_doc].remove(self.current_rect)
+                    self.removed_bboxes[parent_doc] = self.removed_bboxes.get(parent_doc,[]) + [self.current_rect]
 
-                self.rect_item = None
+                self.current_rect = None
         elif event.key() == Qt.Key_R:
             self.view.resetTransform()
 
@@ -208,12 +214,16 @@ class Display:
 
     def get_boundig_boxes(self):
         bboxes = []
-        for bbox in self.created_bboxes:
-            x1,y1,x2,y2 = bbox.rect().getCoords()
-            bboxes.append([int(x1),int(y1),int(x2),int(y2)])
-        for bbox in self.old_bboxes:
-            x1,y1,x2,y2 = bbox.rect().getCoords()
-            bboxes.append([int(x1),int(y1),int(x2),int(y2)])
+        for document in self.created_bboxes:
+            for bbox in self.created_bboxes[document]:
+                x1,y1,x2,y2 = bbox.rect().getCoords()
+                bboxes.append([int(x1),int(y1),int(x2),int(y2)])
+        
+        for document in self.old_bboxes:
+            for bbox in self.old_bboxes[document]:
+                x1,y1,x2,y2 = bbox.rect().getCoords()
+                bboxes.append([int(x1),int(y1),int(x2),int(y2)])
+        
         return bboxes
 
     def dim_image(self, cv_image):
@@ -235,10 +245,7 @@ class Display:
         for bbox in rois:
             x1,y1,x2,y2 = bbox
             cv2_im[y1:y2,x1:x2] = rois[bbox]
-        return cv2_im
-            
-
-        
+        return cv2_im        
 
     def pixmap2cv(self,pixmap):
         buffer = pixmap.toImage().bits().asstring(pixmap.width()*pixmap.height()*4)
