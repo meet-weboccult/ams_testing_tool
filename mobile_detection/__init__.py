@@ -1,10 +1,10 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QShortcut
 import sys
 from pprint import pprint
-from database_manager import Database
-from filters import Filters
-from display import Display
-from actions import Actions
+from .database_manager import Database
+from .filters import Filters
+from .display import Display
+from .actions import Actions
 
 
 class MobileDetection:
@@ -26,14 +26,16 @@ class MobileDetection:
             self.actions.change_counter()
             return
         
+        self.is_data_loaded = True
+        self.display.current_position = 0
+        self.actions.change_counter()
+    
         first = self.filters.data[0]
         self.display.display_image(first['_id'])
-        self.display.draw_bboxes(first['documents'])
-        if len(self.filters.data):
-            self.is_data_loaded = True
-            self.display.current_position = 0
-            self.actions.change_counter()
-            
+        if self.display.imaged_loaded:
+            self.display.draw_bboxes(first['documents'])
+        else:
+            self.actions.widgets['status_bar'].showMessage("CONNECTION ERROR:couln't load image")         
 
     def changed_image(self):
         position = self.display.current_position 
@@ -49,7 +51,10 @@ class MobileDetection:
         
         image_data = self.filters.data[position]
         self.display.display_image(image_data['_id'])
-        self.display.draw_bboxes(image_data['documents'])
+        if self.display.imaged_loaded:
+            self.display.draw_bboxes(image_data['documents'])
+        else:
+            self.actions.widgets['status_bar'].showMessage("CONNECTION ERROR:couln't load image")         
         self.actions.change_counter()
 
     def create_window(self):
@@ -109,5 +114,3 @@ class MobileDetection:
         self.window.setLayout(self.layout)
         self.window.show()
         self.app.exec_()
-
-MobileDetection()

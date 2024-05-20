@@ -1,7 +1,7 @@
 import pymongo
 from bson.objectid import ObjectId
 from datetime import datetime
-from constants import HOST, PORT, USERNAME, PASSWORD, DATABASE
+from .constants import HOST, PORT, USERNAME, PASSWORD, DATABASE
 class Database:
     _instance = None
     @staticmethod
@@ -40,7 +40,8 @@ class Database:
                     "start_time": {
                         "$gte": datetime.fromisoformat(filter['start_time']),
                         "$lte": datetime.fromisoformat(filter['end_time'])
-                    }
+                    },
+                    "validated_by":{"$exists":False}
                 }
             },
             {
@@ -66,5 +67,36 @@ class Database:
         object_id = ObjectId(document['_id'])
         collection = self.database['mobile_usages']
         collection.delete_one({"_id":object_id})
+    
+    def approve_image(self,image_id):
+        collection = self.database['mobile_usages']
+        # TODO : change validated_by on integration of all modules
+        result = collection.update_many({"image":image_id},
+                               {"$set":{"is_correct":True,"validated_by":"meet"}})
+        return result.modified_count
+    
+    def reject_image(self,data,new_bboxes):
+        image = data['image']
+        # TODO : change validated_by on integration of all modules
+
+        collection = self.database['mobile_usages']
+        result = collection.update_many({"image":image},
+                               {"$set":{"is_correct":False,"validated_by":"meet"}})
         
+        if len(new_bboxes) == 0:
+            return result.acknowledged
         
+        new_document = {
+            "workspace_name" : data['workspace_name'],
+            "site_name" : data['site_name'],
+            'image'  : data['image'],
+            'bboxes' : new_bboxes,
+        }
+        if 'camera_name' in data:
+            new_document['camera_name'] = data['camera_name']        
+
+        collection = self.database['corrected_mobiles']
+        result = collection.insert_one(new_document)
+        return result.acknowledged
+        
+    

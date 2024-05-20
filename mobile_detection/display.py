@@ -10,8 +10,8 @@ class DrawableRectItem(QGraphicsRectItem):
         super().__init__(rect)
         self.setPen(pen)
         self.setBrush(brush)
-        self.initial_pen = pen  # Store the initial pen
-        self.is_hovering = False  # Track hover state
+        self.initial_pen = pen  
+        self.is_hovering = False  
         self.is_createing = True
         self.offset = []
         self.data = None
@@ -22,7 +22,7 @@ class DrawableRectItem(QGraphicsRectItem):
     
     def hoverEnterEvent(self, event):
         self.is_hovering = True
-        hover_pen = QPen(Qt.blue, self.pen().width())  # Create a red pen with the same line width
+        hover_pen = QPen(Qt.blue, self.pen().width())  
         self.setPen(hover_pen)
     
     def hoverLeaveEvent(self, event):
@@ -37,13 +37,18 @@ class Display:
         self.widgets['display'] = self.create_image_display()
         self.widgets['image_name'] = self.create_image_name()
         self.clipboard = QApplication.clipboard()
+        
         self.start_pos = None
         self.current_rect = None
+
         self.old_bboxes = dict()
-        self.created_bboxes = dict() 
+        self.created_bboxes = []
         self.removed_bboxes = dict()
+
         self.current_position = 0
+        self.current_data = None
         self.current_size = []
+        self.imaged_loaded = False
 
     def create_navigation_btn(self, text, callback):
         btn = QPushButton(text)
@@ -71,13 +76,16 @@ class Display:
     def display_image(self, url):
         
         self.widgets['image_name'].setText(url)
+        self.current_image = url
         self.scene.clear()
         self.view.resetTransform()        
         pixmap = QPixmap()
         try:
             pixmap.loadFromData(requests.get(url).content)
+            self.imaged_loaded = True
         except requests.exceptions.ConnectionError:
             print("Connection Error")
+            self.imaged_loaded = False
             return
         pixmap = pixmap.scaled(1100,1100,Qt.KeepAspectRatio)
         width,height = pixmap.width(),pixmap.height()
@@ -90,9 +98,10 @@ class Display:
 
     def draw_bboxes(self, documents):
         self.old_bboxes = dict()
-        self.created_bboxes = dict()
+        self.created_bboxes = []
         self.removed_bboxes = dict()
         for document in documents:
+            self.current_data = document
             for index,phone in enumerate(document['img_data']['phone_results']):
                 bbox = phone['bbox']
 
@@ -188,7 +197,7 @@ class Display:
                 self.scene.removeItem(self.current_rect)
                 parent_doc = self.current_rect.parent_document
                 if self.current_rect.is_created:
-                    self.created_bboxes[parent_doc].remove(self.current_rect)
+                    self.created_bboxes.remove(self.current_rect)
                 else:
                     self.old_bboxes[parent_doc].remove(self.current_rect)
                     self.removed_bboxes[parent_doc] = self.removed_bboxes.get(parent_doc,[]) + [self.current_rect]
@@ -214,10 +223,9 @@ class Display:
 
     def get_boundig_boxes(self):
         bboxes = []
-        for document in self.created_bboxes:
-            for bbox in self.created_bboxes[document]:
-                x1,y1,x2,y2 = bbox.rect().getCoords()
-                bboxes.append([int(x1),int(y1),int(x2),int(y2)])
+        for bbox in self.created_bboxes:
+            x1,y1,x2,y2 = bbox.rect().getCoords()
+            bboxes.append([int(x1),int(y1),int(x2),int(y2)])
         
         for document in self.old_bboxes:
             for bbox in self.old_bboxes[document]:

@@ -1,5 +1,8 @@
 FROM jozo/pyqt5
 
+RUN mkdir /app
+WORKDIR /app
+COPY . /app
 
 # To fix: QGLXContext: Failed to create dummy context
 ENV QT_QUICK_BACKEND=software
@@ -38,4 +41,6 @@ RUN apt-get update && apt-get install -y \
     alsa-base \
     alsa-utils
 
-COPY main.py /tmp/
+RUN apt install pip
+
+RUN pip install pymongo opencv-python-headless numpy requests 
