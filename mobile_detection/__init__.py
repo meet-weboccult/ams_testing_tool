@@ -7,9 +7,9 @@ from .display import Display
 from .actions import Actions
 
 class MobileDetection:
-    def __init__(self,validator_name) -> None:
-        self.database_manager = Database(validator_name)
+    def __init__(self, validator_name) -> None:
         self.app = QApplication(sys.argv)
+        self.database_manager = Database(validator_name)
         self.window = self.create_window()
         self.filters = Filters(self.changed_filters)
         self.is_data_loaded = False
@@ -115,7 +115,14 @@ class MobileDetection:
         shortcut_previous = QShortcut("Ctrl+S",self.window)
         shortcut_previous.activated.connect(self.actions.approve)
 
+        shortcut_exit = QShortcut("Escape",self.window)
+        shortcut_exit.activated.connect(self.on_window_close)
+    
+    def on_window_close(self):
+        self.window.close()
+        
     def show_window(self):
         self.window.setLayout(self.layout)
         self.window.show()
         self.app.exec_()
+        

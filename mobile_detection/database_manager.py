@@ -1,7 +1,7 @@
 import pymongo
 from bson.objectid import ObjectId
 from datetime import datetime
-from .constants import HOST, PORT, USERNAME, PASSWORD, DATABASE
+from .constants import DB_STRING, DATABASE
 class Database:
     _instance = None
     @staticmethod
@@ -15,7 +15,7 @@ class Database:
             Database._instance = self
 
         try:
-            self.client = pymongo.MongoClient("mongodb://localhost:27017/")
+            self.client = pymongo.MongoClient(DB_STRING)
             self.database = self.client.get_database(DATABASE)    
             self.validator_name = validator_name
         except Exception as e:
@@ -71,15 +71,12 @@ class Database:
     
     def approve_image(self,image_id):
         collection = self.database['mobile_usages']
-        # TODO : change validated_by on integration of all modules
         result = collection.update_many({"image":image_id},
                                {"$set":{"is_correct":True,"validated_by":self.validator_name}})
         return result.modified_count
     
     def reject_image(self,data,new_bboxes):
         image = data['image']
-        # TODO : change validated_by on integration of all modules
-
         collection = self.database['mobile_usages']
         result = collection.update_many({"image":image},
                                {"$set":{"is_correct":False,"validated_by":self.validator_name}})
