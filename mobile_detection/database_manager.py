@@ -8,7 +8,7 @@ class Database:
     def get_instance():
         return Database._instance
 
-    def __init__(self) -> None:
+    def __init__(self,validator_name) -> None:
         if Database._instance is not None:
             return
         else:
@@ -17,6 +17,7 @@ class Database:
         try:
             self.client = pymongo.MongoClient("mongodb://localhost:27017/")
             self.database = self.client.get_database(DATABASE)    
+            self.validator_name = validator_name
         except Exception as e:
             print(e)
 
@@ -72,7 +73,7 @@ class Database:
         collection = self.database['mobile_usages']
         # TODO : change validated_by on integration of all modules
         result = collection.update_many({"image":image_id},
-                               {"$set":{"is_correct":True,"validated_by":"meet"}})
+                               {"$set":{"is_correct":True,"validated_by":self.validator_name}})
         return result.modified_count
     
     def reject_image(self,data,new_bboxes):
@@ -81,7 +82,7 @@ class Database:
 
         collection = self.database['mobile_usages']
         result = collection.update_many({"image":image},
-                               {"$set":{"is_correct":False,"validated_by":"meet"}})
+                               {"$set":{"is_correct":False,"validated_by":self.validator_name}})
         
         if len(new_bboxes) == 0:
             return result.acknowledged

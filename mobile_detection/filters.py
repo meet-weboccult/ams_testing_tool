@@ -53,5 +53,6 @@ class Filters:
             "end_time" : self.widgets['end_datetime'].dateTime().toString(Qt.ISODate),
         }
         self.data = list(self.database_manager.get_images(filter))     
+        self.validated_images = []
         self.on_changed_filters()
         

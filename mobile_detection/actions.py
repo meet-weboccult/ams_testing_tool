@@ -11,8 +11,9 @@ class Actions:
         self.widgets = dict()
         self.widgets['skip_btn'] = self.create_action_btn("Skip",self.skip)
         self.widgets['approve_btn'] = self.create_action_btn("Approve",self.approve)
-        self.widgets['counter_label'] = self.create_counter_label()
-        self.widgets['stats'] = self.create_stats_label()
+        self.widgets['counter_label'] = self.create_status_label()
+        self.widgets['validated'] = self.create_status_label()
+        self.widgets['stats'] = self.create_status_label()
         self.widgets['status_bar'] = self.create_status_bar()
 
         self.changed_count = 0
@@ -25,17 +26,14 @@ class Actions:
         btn.clicked.connect(callback)   
         return btn
     
-    def create_counter_label(self):
-        label = QLabel()
-        return label
-    
-    def create_stats_label(self):
+    def create_status_label(self):
         label = QLabel()
         return label
     
     def create_status_bar(self):
         status_bar = QStatusBar()
         status_bar.setFixedHeight(30)
+        status_bar.addPermanentWidget(self.widgets['validated'])
         status_bar.addPermanentWidget(self.widgets['stats'])
         status_bar.addPermanentWidget(self.widgets['counter_label'])
         status_bar.setStyleSheet("background-color: lightgrey; color: black;")
@@ -59,8 +57,9 @@ class Actions:
                 self.changed_count += change_count
                 self.removed_count += removed_count
                 self.created_count += new_count
-                self.widgets['stats'].setText(f"changed: {self.changed_count}, removed: {self.removed_count}, created:{self.created_count}\t")
-
+                self.widgets['stats'].setText(f"changed: {self.changed_count}, removed: {self.removed_count}, created:{self.created_count} \t")
+                index = self.display_object.current_position
+                self.filters_object.data[index]['validated'] = True
         self.display_object.change_next_image()
         
     def count_bboxes(self):

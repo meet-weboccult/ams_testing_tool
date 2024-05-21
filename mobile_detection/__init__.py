@@ -6,21 +6,20 @@ from .filters import Filters
 from .display import Display
 from .actions import Actions
 
-
 class MobileDetection:
-    def __init__(self) -> None:
-        self.database_manager = Database()
+    def __init__(self,validator_name) -> None:
+        self.database_manager = Database(validator_name)
         self.app = QApplication(sys.argv)
         self.window = self.create_window()
         self.filters = Filters(self.changed_filters)
         self.is_data_loaded = False
         self.display = Display(self.changed_image)
-        self.actions = Actions(self.filters,self.display)
+        self.actions = Actions(self.filters, self.display)
         self.place_widgets()
         self.set_shortcuts()
         self.show_window()
     
-    def changed_filters(self,**kwargs):
+    def changed_filters(self):
         if not len(self.filters.data):
             self.display.scene.clear()
             self.actions.change_counter()
@@ -35,7 +34,7 @@ class MobileDetection:
         if self.display.imaged_loaded:
             self.display.draw_bboxes(first['documents'])
         else:
-            self.actions.widgets['status_bar'].showMessage("CONNECTION ERROR:couln't load image")         
+            self.actions.widgets['status_bar'].showMessage("CONNECTION ERROR: Can't load image")         
 
     def changed_image(self):
         position = self.display.current_position 
@@ -50,11 +49,17 @@ class MobileDetection:
             return
         
         image_data = self.filters.data[position]
+        validated = self.filters.data[position].get("validated",False)
+        if validated:
+            self.actions.widgets['validated'].setText("Validated \t")
+        else:
+            self.actions.widgets['validated'].setText("")
+
         self.display.display_image(image_data['_id'])
         if self.display.imaged_loaded:
             self.display.draw_bboxes(image_data['documents'])
         else:
-            self.actions.widgets['status_bar'].showMessage("CONNECTION ERROR:couln't load image")         
+            self.actions.widgets['status_bar'].showMessage("CONNECTION ERROR, Can't load image")         
         self.actions.change_counter()
 
     def create_window(self):
