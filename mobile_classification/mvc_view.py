@@ -2,7 +2,6 @@ from PyQt5.QtWidgets import *
 from .mvc_controller import Controller
 from PyQt5.QtGui import  QKeySequence, QIcon, QPainter, QPen, QFont,QColor
 from PyQt5.QtCore import Qt,QRectF,QDate,QTime,QDateTime
-import sys
 from bson import json_util
 
 class View:

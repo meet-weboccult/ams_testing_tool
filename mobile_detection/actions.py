@@ -1,6 +1,4 @@
-from typing import Any
 from PyQt5.QtWidgets import QPushButton, QStatusBar, QLabel
-from pprint import pprint
 from .database_manager import Database
 
 class Actions:

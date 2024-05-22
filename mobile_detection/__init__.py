@@ -1,6 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QShortcut
-import sys
-from pprint import pprint
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QShortcut
 from .database_manager import Database
 from .filters import Filters
 from .display import Display

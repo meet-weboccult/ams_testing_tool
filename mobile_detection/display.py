@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt, QRectF
 import requests
 import numpy as np
 import cv2
-from pprint import pprint
+
 class DrawableRectItem(QGraphicsRectItem):
     def __init__(self, rect=QRectF(), pen=QPen(Qt.red, 3), brush=QBrush(Qt.NoBrush)):
         super().__init__(rect)
