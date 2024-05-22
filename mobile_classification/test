@@ -1,0 +1,39 @@
+# def update_image_blur(self):
+    #     if self.pixmap_item.pixmap():
+    #         pixmap = self.pixmap_item.pixmap()
+    #         image = pixmap.toImage()
+
+    #         if self.is_blurring:
+    #             bboxes = self.controller.model.get_bboxes()
+    #             for bbox in bboxes:
+    #                 x1, y1, x2, y2 = bbox
+    #                 x1 = int(x1 * image.width())
+    #                 y1 = int(y1 * image.height())
+    #                 x2 = int(x2 * image.width())
+    #                 y2 = int(y2 * image.height())
+    #                 image.setPixelColor(QColor(0, 0, 0), x1, y1)  # Set a temporary pixel to mark the area
+    #                 for x in range(x1, x2):
+    #                     for y in range(y1, y2):
+    #                         image.setPixelColor(QColor(0, 0, 0), x, y)
+
+    #             image = image.convertToFormat(QImage.Format_ARGB32)
+    #             blurred_image = image.copy()
+    #             blurred_image = blurred_image.filtered(QImageFilter.BoxBlur(10))
+    #             image = QImage.fromData(blurred_image.bits(), blurred_image.bytesPerLine(), blurred_image.width(), blurred_image.height(), QImage.Format_ARGB32)
+
+    #         pixmap = QPixmap.fromImage(image)
+    #         self.pixmap_item.setPixmap(pixmap)
+    #         self.image_view.fitInView(self.pixmap_item, Qt.KeepAspectRatio)
+    
+    
+    # name_dialog = NameDialog()
+        # while True:
+        #     if name_dialog.exec_() == QDialog.Accepted:
+        #         user_name = name_dialog.get_name()
+        #         if user_name.strip() != "":
+        #             self.user_name = user_name
+        #             break
+        #         else:
+        #             QMessageBox.warning(self, "Warning", "You must enter a name.")
+        #     else:
+        #         sys.exit()
