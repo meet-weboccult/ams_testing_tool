@@ -2,7 +2,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
-
 class review_manager:
     def __init__(
         self,
@@ -35,7 +34,6 @@ class review_manager:
     def skip_button(self):
         filter_button = QPushButton(self.name)
         filter_button.clicked.connect(self.skip_button_function)
-
         return filter_button
 
     def skip_button_function(self):

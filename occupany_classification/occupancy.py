@@ -6,7 +6,6 @@ from .filter_manager import *
 from .image_manager import *
 from .review_manager import *
 
-
 class MainWindow(QWidget):
     def __init__(self,model_manager, app, validator_name):
         super().__init__()
@@ -60,6 +59,9 @@ class MainWindow(QWidget):
         self.filter_data = self.filter_manager.filter_database_data
         img_data_list = []
         data_dic = {}
+        if len(self.filter_data) == 0:
+            return
+        
         for i in self.filter_data[self.image_manager.key]["documents"]:
             data_dic = {"_id": i["_id"], "image_data": i["img_data"]}
             img_data_list.append(data_dic)

@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import *
 from mobile_classification.mvc_view import View
 from mobile_detection import MobileDetection
-from occupany_classification.main_window import MainWindow
+from occupany_classification.occupancy import MainWindow
 import sys
 class ModelSelection:
 

@@ -49,6 +49,5 @@ class Database_data:
         list_data = list(data)
         return list_data
     def update_date(self, id,status):
-        data = self.collection.find_one({"_id": id})
         self.collection.update_one({"_id": id}, {"$set": {"validated_by": self.validator_name,"is_occupancy_correct":status}})
-        data1 = self.collection.find_one({"_id": id})
+

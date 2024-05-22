@@ -75,22 +75,15 @@ class filter_manager:
         self.filter_database_data = self.database_object.get_image(filter)
         self.CHECK_FILTER_STATUS()
 
-
     def add_widget(self, item):
         self.inner_horizontal_box.addWidget(item)
 
     def add_layout(self, horizontal_layout):
         horizontal_layout.addLayout(self.inner_horizontal_box)
 
-
-
-
-
-
 class CustomPolygon(QGraphicsPolygonItem):
     def __init__(self, polygon=None,color=None,database_obj=None,image_data_id=None):
         super().__init__(polygon)
-        
         self.color=color
         self.polygon = polygon
         self.database_object=database_obj

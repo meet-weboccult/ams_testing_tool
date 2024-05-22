@@ -3,7 +3,6 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import requests
 
-
 class image_manager:
 
     def __init__(self, database_object, CHECK_BUTTON_STATUS) -> None:
@@ -49,8 +48,15 @@ class image_manager:
         self.view = QGraphicsView()
         self.view.setScene(self.scene)
         self.view.show()
+        self.view.wheelEvent = self.wheelEvent
         # self.image_display()
         return self.view
+    
+    def wheelEvent(self, event):
+        change = event.angleDelta().y()//120
+        self.view.scale(1+change/10,1+change/10)
+        self.view.centerOn(self.view.mapToScene(event.pos()))
+       
 
     def image_display(self, URL, roi_value):
         self.roi_values = roi_value
@@ -70,8 +76,7 @@ class image_manager:
                 self.color = Qt.blue
             polygons = []
             roi_id = self.roi_values[index]["_id"]
-            
-            
+                  
             all_polygon_roi = roi["image_data"]["rois"][0]["points"]
             polygon = QPolygonF()
             for point in all_polygon_roi:
@@ -109,7 +114,6 @@ class image_manager:
 
     def add_layout(self, horizontal_layout):
         horizontal_layout.addLayout(self.inner_horizontal_box)
-
 
 class CustomPolygon(QGraphicsPolygonItem):
     def __init__(self, polygon=None, color=None, database_obj=None, image_data_id=None,):
