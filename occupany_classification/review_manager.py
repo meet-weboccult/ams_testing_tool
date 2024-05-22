@@ -28,9 +28,9 @@ class review_manager:
 
     def horizontal_box(self, feature):
         self.inner_horizontal_box.setSpacing(100)
-        feature_addresh = feature()
-        self.add_widget(feature_addresh)
-        return feature_addresh
+        feature_address = feature()
+        self.add_widget(feature_address)
+        return feature_address
 
     def skip_button(self):
         filter_button = QPushButton(self.name)
