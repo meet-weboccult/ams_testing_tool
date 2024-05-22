@@ -31,6 +31,7 @@ class Model:
             }
         ]
         self.documents = list(self.collection.aggregate(pipeline))
+        self.documents = [doc for doc in self.documents if len(doc['documents'])>1]
 
     def get_current_document(self):
         if self.documents:

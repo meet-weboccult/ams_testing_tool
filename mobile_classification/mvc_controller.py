@@ -11,6 +11,7 @@ class Controller(QObject):
         super().__init__()
         self.model = Model()
         self.view = view
+        self.approved = False
         self.network_manager = QNetworkAccessManager(self)
         self.network_manager.finished.connect(self.handle_image_response)
 
@@ -41,6 +42,7 @@ class Controller(QObject):
     def show_previous_image(self):
         
         if self.model.previous_image():
+            self.approved =False
             self.update_image()
         
         else:
@@ -49,6 +51,7 @@ class Controller(QObject):
     def show_next_image(self):
         
         if self.model.next_image():
+            self.approved =False
             self.update_image()
         
         else:

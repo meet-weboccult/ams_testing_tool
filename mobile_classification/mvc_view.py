@@ -39,7 +39,6 @@ class View:
         
         QShortcut(QKeySequence(Qt.CTRL + Qt.Key_Escape), self.window).activated.connect(self.window.close)
         QShortcut(QKeySequence(Qt.Key_A), self.window).activated.connect(self.approve_data)
-        QShortcut(QKeySequence(Qt.Key_U), self.window).activated.connect(self.update_bbox)
         
     def load_documents_from_mongodb(self):
         start_date = self.start_date.dateTime().toPyDateTime()
@@ -63,13 +62,24 @@ class View:
             QMessageBox.warning(self.window,"Error","No data loaded!")
         
     def approve_data(self):
+
+        if self.controller.approved:
+            QMessageBox.information(self.window,"Info","Document already approved")
+            return
+
         if self.controller.model.documents and self.document:
-            for item in self.document:
-                query = {'_id':item['_id']}
-                update = {'$set': {'usage_type': item['usage_type'], 'validated_by': self.validator_name}}
-                self.controller.model.collection.update_one(query,update)
+            if all('usage_type' in keys for keys in self.document):
+                for item in self.document:
+                    query = {'_id':item['_id']}
+                    update = {'$set': {'usage_type': item['usage_type'], 'validated_by': self.validator_name}}
+                    self.controller.model.collection.update_one(query,update)
+            
+                self.document = None
+                self.controller.approved = True
+            
+            else:
+                QMessageBox.warning(self.window,"Error","Please update all BBOXs before approving")
         
-            self.document = None
         else:
             QMessageBox.warning(self.window,"Error","Either data is not loaded or you clicked on Approve without updating BBOX")
 
@@ -157,6 +167,10 @@ class View:
         QShortcut(QKeySequence(Qt.Key_Right), self.window).activated.connect(self.controller.show_next_image)
         QShortcut(QKeySequence(Qt.Key_Left), self.window).activated.connect(self.controller.show_previous_image)
         QShortcut("Escape",self.window).activated.connect(self.on_window_change)
+        QShortcut(QKeySequence(Qt.Key_B),self.window).activated.connect(self.set_focus_bbox)
+    
+    def set_focus_bbox(self):
+        self.bbox_button.setFocus()
 
     def on_window_change(self):
         self.window.close()
