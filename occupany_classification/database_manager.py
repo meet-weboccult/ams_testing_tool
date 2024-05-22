@@ -1,6 +1,5 @@
 from datetime import datetime
 import pymongo
-import pprint
 
 class Database_data:
     def __init__(self,validator_name) -> None:
@@ -13,11 +12,9 @@ class Database_data:
         self.collection = db["occupancy"]
 
     def find_all_data(self):
-        print("find all data")
         self.x = self.collection.find()
 
     def get_data(self):
-        print("get data")
         return self.x
 
     def find_unique(self, name):
@@ -28,7 +25,6 @@ class Database_data:
         workspace_name = self.collection.find(
             {"site_name": site_name}, {"workspace_name": 1, "_id": 0}
         ).distinct("workspace_name")
-        print(workspace_name)
         return workspace_name
 
     def get_image(self, filter):
@@ -54,11 +50,5 @@ class Database_data:
         return list_data
     def update_date(self, id,status):
         data = self.collection.find_one({"_id": id})
-        print("*"*10)
-        print("database",status)
-        print("*"*10)
-        print("database",data)
-        print("*"*10)
         self.collection.update_one({"_id": id}, {"$set": {"validated_by": self.validator_name,"is_occupancy_correct":status}})
         data1 = self.collection.find_one({"_id": id})
-        print("database_final",data1)

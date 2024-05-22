@@ -65,10 +65,6 @@ class filter_manager:
         return filter_button
 
     def get_all_filter_value(self):
-        # print(self.filter["workspace"].currentText())
-        # print(self.filter["floor"].currentText())
-        # print(self.filter["starting_time"].text())
-        # print(self.filter["ending_time"].text())
         filter = {
             "office": self.filter["workspace"].currentText(),
             "floor": self.filter["floor"].currentText(),
@@ -81,11 +77,9 @@ class filter_manager:
 
 
     def add_widget(self, item):
-        print("add widget")
         self.inner_horizontal_box.addWidget(item)
 
     def add_layout(self, horizontal_layout):
-        print("add_layout")
         horizontal_layout.addLayout(self.inner_horizontal_box)
 
 
@@ -106,7 +100,6 @@ class CustomPolygon(QGraphicsPolygonItem):
         self.check_status()
         
     def check_status(self):
-        print(self.count_)
         if self.count_%2==0:
             self.status=True
         else:

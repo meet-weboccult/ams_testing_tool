@@ -61,13 +61,9 @@ class MainWindow(QWidget):
         img_data_list = []
         data_dic = {}
         for i in self.filter_data[self.image_manager.key]["documents"]:
-            print("main_window", i["_id"])
             data_dic = {"_id": i["_id"], "image_data": i["img_data"]}
             img_data_list.append(data_dic)
-        print(
-            "main_window",
-            self.filter_data[self.image_manager.key]["documents"][0]["image"],
-        )
+        
         self.image_manager.image_display(
             self.filter_data[self.image_manager.key]["documents"][0]["image"],
             img_data_list,
@@ -76,7 +72,6 @@ class MainWindow(QWidget):
     def CHECK_BUTTON_STATUS(self):
         img_data_list = []
         for i in self.filter_data[self.image_manager.key]["documents"]:
-            print("main_window", i["_id"])
             data_dic = {"_id": i["_id"], "image_data": i["img_data"]}
             img_data_list.append(data_dic)
         self.image_manager.image_display(
@@ -102,8 +97,6 @@ class MainWindow(QWidget):
         self.filter_manager.build_workspace_combo_box(
             "workspace", self.unique_site_name
         )
-
-        print("MAIN_window", self.filter_manager.filter["workspace"].currentText())
 
         self.filter_manager.build_floor_combo_box("floor", self.unique_workspace_name)
         self.filter_manager.build_date_time_box("starting_time")

@@ -19,10 +19,6 @@ class image_manager:
     def save_database(self):
         for count in self.roi_values:
             id_ = count["_id"]
-            print("*"*10)
-            print(self.status_dic[id_].status)
-            print(id_)
-            print("*"*10)
             self.item.update_database(id_,self.status_dic[id_].status)
 
     def build_next_push_button(self, name):
@@ -74,7 +70,6 @@ class image_manager:
                 self.color = Qt.blue
             polygons = []
             roi_id = self.roi_values[index]["_id"]
-            print("         hj",roi_id)
             
             
             all_polygon_roi = roi["image_data"]["rois"][0]["points"]
@@ -92,7 +87,6 @@ class image_manager:
                 self.item.setPen(QPen(self.color, 3, Qt.SolidLine))
                 self.scene.addItem(self.item)
                 self.status_dic[roi_id]=self.item
-        print(self.status_dic,"************ for statring check")
 
     def previous_push_button(self):
         filter_button = QPushButton(self.name)
@@ -125,7 +119,6 @@ class CustomPolygon(QGraphicsPolygonItem):
         self.polygon = polygon
         self.database_object = database_obj
         self.image_data_id = image_data_id
-        print(self.image_data_id)
         self.count_ = 0
         self.status = True
 
@@ -147,7 +140,6 @@ class CustomPolygon(QGraphicsPolygonItem):
 
     def update_database(self, id_,status):
         self.id_ = id_
-        print(self.id_,"33333",status)
         self.database_object.update_date(
             self.id_, status
         )

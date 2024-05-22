@@ -44,7 +44,6 @@ class review_manager:
 
     def validate_button(self):
         filter_button = QPushButton(self.name)
-        print("review_manager", self.save_database_function)
         filter_button.clicked.connect(self.validate_button_function)
         return filter_button
 
@@ -54,9 +53,7 @@ class review_manager:
         self.save_database_function()
 
     def add_widget(self, item):
-        print("add widget")
         self.inner_horizontal_box.addWidget(item)
 
     def add_layout(self, horizontal_layout):
-        print("add_layout")
         horizontal_layout.addLayout(self.inner_horizontal_box)
