@@ -25,7 +25,7 @@ class filter_manager:
         self.filter[name] = self.horizontal_box(self.push_button)
 
     def horizontal_box(self, feature):
-        self.inner_horizontal_box.setSpacing(100)
+        # self.inner_horizontal_box.setSpacing(100)
         feature_addresh = feature()
         self.add_widget(feature_addresh)
         return feature_addresh
