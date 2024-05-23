@@ -7,8 +7,9 @@ from .display import Display
 from .actions import Actions
 
 class MobileDetection:
-    def __init__(self, validator_name) -> None:
-        self.app = QApplication(sys.argv)
+    def __init__(self,model_manager, app, validator_name) -> None:
+        self.model_manager = model_manager
+        self.app = app
         self.database_manager = Database(validator_name)
         self.window = self.create_window()
         self.filters = Filters(self.changed_filters)
@@ -120,9 +121,10 @@ class MobileDetection:
     
     def on_window_close(self):
         self.window.close()
+        self.model_manager.window.show()
         
     def show_window(self):
         self.window.setLayout(self.layout)
         self.window.show()
-        self.app.exec_()
+        
         

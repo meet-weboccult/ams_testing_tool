@@ -7,8 +7,6 @@ authenticator.start_authentication()
 
 if authenticator.get_user() is not None:
     validator_name = authenticator.get_user()
-    models_manager = ModelSelection()
-    models_manager.add_model({"Mobile Detection":MobileDetection})
-    model = models_manager.show_window()
-    
-    model(validator_name)
+    models_manager = ModelSelection({"Mobile Detection":MobileDetection},validator_name)    
+    models_manager.show_window()
+

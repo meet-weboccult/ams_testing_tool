@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import *
 import time
 class ModelSelection:
 
-    def __init__(self) -> None:
+    def __init__(self,models, validator_name) -> None:
         self.app = QApplication([])
         self.window = QWidget()
         self.window.setWindowTitle("Select Model")
@@ -10,13 +10,8 @@ class ModelSelection:
         self.layout = QVBoxLayout()
         self.window.setLayout(self.layout)
 
-        self.models = dict()
-        self.selected_model = None
-
-    def add_model(self,model):
-        self.models.update(model)
-
-    def show_window(self):
+        self.validator_name = validator_name
+        self.models = models
         for name,cls in self.models.items():
             btn = QPushButton(name)
             btn.clicked.connect(lambda:self.open_model(cls))
@@ -34,11 +29,17 @@ class ModelSelection:
 
         self.window.show()
         self.app.exec_()
+        self.selected_model = None
+
+    def add_model(self,model):
+        self.models.update(model)
+
+    def show_window(self):
+        
         return self.selected_model
         
     def open_model(self,cls):
-        
-        self.app.closeAllWindows()
-        self.selected_model = cls
+        self.window.close()
+        cls(self,self.app,self.validator_name)
         
 
